@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Tehran Hospitals and Police Stations</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Tehran_Police_and_Hospitals_1.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[35.539990897527126,51.032401072088554],[35.88530616395851,51.8713641810758]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Tehran Hospitals and Police Stations</h2>';
+        };
+        title.addTo(map);
+        var abstract = new L.Control({'position':'topright'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+
+                abstract.show();
+                return this._div;
+            };
+            abstract.show = function () {
+                this._div.classList.remove("abstract");
+                this._div.classList.add("abstractUncollapsed");
+                this._div.innerHTML = 'This is a web map designed to support security practitioners (e.g., Executive Protection, Security Assessors, etc.) easily locate Hospitals and Police Stations in Tehran, in case of need.';
+        };
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_Tehran_Police_and_Hospitals_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['amenity'] !== null ? autolinker.link(feature.properties['amenity'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Tehran_Police_and_Hospitals_1_0(feature) {
+            switch(String(feature.properties['amenity'])) {
+                case 'hospital':
+                    return {
+                pane: 'pane_Tehran_Police_and_Hospitals_1',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(227,26,28,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(238,90,16,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'police':
+                    return {
+                pane: 'pane_Tehran_Police_and_Hospitals_1',
+                radius: 8.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(57,108,155,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Tehran_Police_and_Hospitals_1');
+        map.getPane('pane_Tehran_Police_and_Hospitals_1').style.zIndex = 401;
+        map.getPane('pane_Tehran_Police_and_Hospitals_1').style['mix-blend-mode'] = 'normal';
+        var layer_Tehran_Police_and_Hospitals_1 = new L.geoJson(json_Tehran_Police_and_Hospitals_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Tehran_Police_and_Hospitals_1',
+            layerName: 'layer_Tehran_Police_and_Hospitals_1',
+            pane: 'pane_Tehran_Police_and_Hospitals_1',
+            onEachFeature: pop_Tehran_Police_and_Hospitals_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_Tehran_Police_and_Hospitals_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Tehran_Police_and_Hospitals_1);
+        map.addLayer(layer_Tehran_Police_and_Hospitals_1);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"amenity": "str","name": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_amenity = document.createElement('div');
+            div_amenity.id = "div_amenity";
+            div_amenity.className= "filterselect";
+            document.getElementById("menu").appendChild(div_amenity);
+            sel_amenity = document.createElement('select');
+            sel_amenity.multiple = true;
+            sel_amenity.size = 2;
+            sel_amenity.id = "sel_amenity";
+            var amenity_options_str = "<option value='' unselected></option>";
+            sel_amenity.onchange = function(){filterFunc()};
+            amenity_options_str  += '<option value="hospital">hospital</option>';
+            amenity_options_str  += '<option value="police">police</option>';
+            sel_amenity.innerHTML = amenity_options_str;
+            div_amenity.appendChild(sel_amenity);
+            var lab_amenity = document.createElement('div');
+            lab_amenity.innerHTML = 'amenity';
+            lab_amenity.className = 'filterlabel';
+            div_amenity.appendChild(lab_amenity);
+            var reset_amenity = document.createElement('div');
+            reset_amenity.innerHTML = 'clear filter';
+            reset_amenity.className = 'filterlabel';
+            reset_amenity.onclick = function() {
+                var options = document.getElementById("sel_amenity").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_amenity.appendChild(reset_amenity);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_name = document.createElement('div');
+            div_name.id = "div_name";
+            div_name.className= "filterselect";
+            document.getElementById("menu").appendChild(div_name);
+            sel_name = document.createElement('select');
+            sel_name.multiple = true;
+            sel_name.size = 10;
+            sel_name.id = "sel_name";
+            var name_options_str = "<option value='' unselected></option>";
+            sel_name.onchange = function(){filterFunc()};
+            name_options_str  += '<option value="NULL">NULL</option>';
+            name_options_str  += '<option value="(اداره گذرنامه غرب ( یافت آباد">(اداره گذرنامه غرب ( یافت آباد</option>';
+            name_options_str  += '<option value="Baran Denistry ( Specialized-Digital) دندانپزشکی تخصصی باران">Baran Denistry ( Specialized-Digital) دندانپزشکی تخصصی باران</option>';
+            name_options_str  += '<option value="Cyber Police">Cyber Police</option>';
+            name_options_str  += '<option value="Diplomatic Police">Diplomatic Police</option>';
+            name_options_str  += '<option value="sepah gozinesh">sepah gozinesh</option>';
+            name_options_str  += '<option value="آزمایشگاه دنا">آزمایشگاه دنا</option>';
+            name_options_str  += '<option value="آماد پشتیبانی کل ناجا">آماد پشتیبانی کل ناجا</option>';
+            name_options_str  += '<option value="اجرائیات پلیس راهور تهران">اجرائیات پلیس راهور تهران</option>';
+            name_options_str  += '<option value="اداره راهنمایی و رانندگی منطقه بیست و هشت">اداره راهنمایی و رانندگی منطقه بیست و هشت</option>';
+            name_options_str  += '<option value="اداره صدور گذرنامه شهرری">اداره صدور گذرنامه شهرری</option>';
+            name_options_str  += '<option value="اداره مرکزی پلیس مهاجرت و گذرنامه">اداره مرکزی پلیس مهاجرت و گذرنامه</option>';
+            name_options_str  += '<option value="ارتوپدی فنی باریش">ارتوپدی فنی باریش</option>';
+            name_options_str  += '<option value="انستیتو کانسر دانشگاه تهران">انستیتو کانسر دانشگاه تهران</option>';
+            name_options_str  += '<option value="اورژانس اجتماعي تهران شميرانات">اورژانس اجتماعي تهران شميرانات</option>';
+            name_options_str  += '<option value="اورژانس بیمارستان میلاد">اورژانس بیمارستان میلاد</option>';
+            name_options_str  += '<option value="ایستگاه استقرار پلیس بزرگراه">ایستگاه استقرار پلیس بزرگراه</option>';
+            name_options_str  += '<option value="ایستگاه شماره 3 میدان ونک کلانتری 103 گاندی">ایستگاه شماره 3 میدان ونک کلانتری 103 گاندی</option>';
+            name_options_str  += '<option value="ایستگاه شماره دو قائم">ایستگاه شماره دو قائم</option>';
+            name_options_str  += '<option value="ایستگاه شماره سه کلانتری قلهک">ایستگاه شماره سه کلانتری قلهک</option>';
+            name_options_str  += '<option value="ایستگاه پلیس">ایستگاه پلیس</option>';
+            name_options_str  += '<option value="ایستگاه پلیس ترافیک">ایستگاه پلیس ترافیک</option>';
+            name_options_str  += '<option value="ایستگاه پلیس شماره ۲ کلانتری ۱۰۱ تجریش">ایستگاه پلیس شماره ۲ کلانتری ۱۰۱ تجریش</option>';
+            name_options_str  += '<option value="ایستگاه پلیس مهرآباد">ایستگاه پلیس مهرآباد</option>';
+            name_options_str  += '<option value="ایستگاه پلیس کلانتری 135 آزادی">ایستگاه پلیس کلانتری 135 آزادی</option>';
+            name_options_str  += '<option value="ایستگاه پلیس کلانتری ۱۳۴ شهرک غرب">ایستگاه پلیس کلانتری ۱۳۴ شهرک غرب</option>';
+            name_options_str  += '<option value="ایستگاه ۱ کلانتری ۱۱۳">ایستگاه ۱ کلانتری ۱۱۳</option>';
+            name_options_str  += '<option value="بخش کرونا">بخش کرونا</option>';
+            name_options_str  += '<option value="بیمارستان تخصصی چشم پزشکی بینا">بیمارستان تخصصی چشم پزشکی بینا</option>';
+            name_options_str  += '<option value="بیمارستان روانپزشکی دلارام سینا">بیمارستان روانپزشکی دلارام سینا</option>';
+            name_options_str  += '<option value="بیمارستان روانپزشکی رضایی">بیمارستان روانپزشکی رضایی</option>';
+            name_options_str  += '<option value="بیمارستان نور">بیمارستان نور</option>';
+            name_options_str  += '<option value="داروخانه دکتر گلابچی">داروخانه دکتر گلابچی</option>';
+            name_options_str  += '<option value="درمانگاه شبانه روزی مطهر">درمانگاه شبانه روزی مطهر</option>';
+            name_options_str  += '<option value="دفتر پلیس+۱۰">دفتر پلیس+۱۰</option>';
+            name_options_str  += '<option value="دکتر پرویز محمدی">دکتر پرویز محمدی</option>';
+            name_options_str  += '<option value="رادیولوژی فک دندان و صورت">رادیولوژی فک دندان و صورت</option>';
+            name_options_str  += '<option value="راهنمایی رانندگی تهرانسر">راهنمایی رانندگی تهرانسر</option>';
+            name_options_str  += '<option value="راهنمایی رانندگی منطقه یک">راهنمایی رانندگی منطقه یک</option>';
+            name_options_str  += '<option value="راهنمایی رانندگی منطقه ۸">راهنمایی رانندگی منطقه ۸</option>';
+            name_options_str  += '<option value="راهنمایی و رانندگی منطقه۱۷">راهنمایی و رانندگی منطقه۱۷</option>';
+            name_options_str  += '<option value="ساختمان شماره ۳ بیمارستان">ساختمان شماره ۳ بیمارستان</option>';
+            name_options_str  += '<option value="ستاد ترخیص خودرو">ستاد ترخیص خودرو</option>';
+            name_options_str  += '<option value="ستاد پلیس آگاهی تهران بزرگ">ستاد پلیس آگاهی تهران بزرگ</option>';
+            name_options_str  += '<option value="ستاد پلیس مبارزه با موادمخدر تهران بزرگ">ستاد پلیس مبارزه با موادمخدر تهران بزرگ</option>';
+            name_options_str  += '<option value="سر کلانتری شمال راهنمایی و رانندگی">سر کلانتری شمال راهنمایی و رانندگی</option>';
+            name_options_str  += '<option value="سرکلانتری هفتم پلیس پیشگیری فاتب">سرکلانتری هفتم پلیس پیشگیری فاتب</option>';
+            name_options_str  += '<option value="سرکلانتری یکم">سرکلانتری یکم</option>';
+            name_options_str  += '<option value="شنوایی سنجی و سمعک آسا">شنوایی سنجی و سمعک آسا</option>';
+            name_options_str  += '<option value="فرماندهی انتظامی تهران بزرگ-ستاد فاتب">فرماندهی انتظامی تهران بزرگ-ستاد فاتب</option>';
+            name_options_str  += '<option value="فرماندهی عملیات دژبان کل ناجا">فرماندهی عملیات دژبان کل ناجا</option>';
+            name_options_str  += '<option value="فرماندهی مرزبانی کل ناجا">فرماندهی مرزبانی کل ناجا</option>';
+            name_options_str  += '<option value="فرماندهی مهندسی">فرماندهی مهندسی</option>';
+            name_options_str  += '<option value="فرماندهی نیروی انتظامی نبی اکرم">فرماندهی نیروی انتظامی نبی اکرم</option>';
+            name_options_str  += '<option value="فرماندهی پلیس دیپلماتیک">فرماندهی پلیس دیپلماتیک</option>';
+            name_options_str  += '<option value="فرماندهی کل نظارت بر اماکن ناجا">فرماندهی کل نظارت بر اماکن ناجا</option>';
+            name_options_str  += '<option value="فرماندهی یگان انتظامی مترو">فرماندهی یگان انتظامی مترو</option>';
+            name_options_str  += '<option value="قرارگاه ثارالله تهران">قرارگاه ثارالله تهران</option>';
+            name_options_str  += '<option value="قرارگاه گشت غرب">قرارگاه گشت غرب</option>';
+            name_options_str  += '<option value="مجتمع بیمارستانی یاس (دانشگاه علوم پزشکی تهران)">مجتمع بیمارستانی یاس (دانشگاه علوم پزشکی تهران)</option>';
+            name_options_str  += '<option value="مرکز تصویربرداری امید نوین">مرکز تصویربرداری امید نوین</option>';
+            name_options_str  += '<option value="مرکز نظارت همگانی ناجا (۱۹۷)">مرکز نظارت همگانی ناجا (۱۹۷)</option>';
+            name_options_str  += '<option value="مطب دکتر ایوب صالحی">مطب دکتر ایوب صالحی</option>';
+            name_options_str  += '<option value="معاونت نیروی انسانی ستاد فرماندهی ناجا">معاونت نیروی انسانی ستاد فرماندهی ناجا</option>';
+            name_options_str  += '<option value="پارکینگ سفیر شرق">پارکینگ سفیر شرق</option>';
+            name_options_str  += '<option value="پاسگاه دژبانی">پاسگاه دژبانی</option>';
+            name_options_str  += '<option value="پاسگاه راهنمایی و رانندگی">پاسگاه راهنمایی و رانندگی</option>';
+            name_options_str  += '<option value="پاسگاه شماره ۱ تجریش">پاسگاه شماره ۱ تجریش</option>';
+            name_options_str  += '<option value="پاسگاه پلیس">پاسگاه پلیس</option>';
+            name_options_str  += '<option value="پایس دیپلماتیک فردوسی">پایس دیپلماتیک فردوسی</option>';
+            name_options_str  += '<option value="پایگاه سوم پلیس مبارزه با موادمخدر فاتب">پایگاه سوم پلیس مبارزه با موادمخدر فاتب</option>';
+            name_options_str  += '<option value="پایگاه نهم پلیس مبارزه با موادمخدر فاتب">پایگاه نهم پلیس مبارزه با موادمخدر فاتب</option>';
+            name_options_str  += '<option value="پایگاه هفتم  پلیس اطلاعات و امنیت (ویژه مبارزه با مواد مخدر)">پایگاه هفتم  پلیس اطلاعات و امنیت (ویژه مبارزه با مواد مخدر)</option>';
+            name_options_str  += '<option value="پایگاه هفتم پلیس آگاهی">پایگاه هفتم پلیس آگاهی</option>';
+            name_options_str  += '<option value="پایگاه پنجم آگاهی تهران">پایگاه پنجم آگاهی تهران</option>';
+            name_options_str  += '<option value="پایگاه پنجم پلیس آگاهی تهران">پایگاه پنجم پلیس آگاهی تهران</option>';
+            name_options_str  += '<option value="پایگاه پنجم پلیس مبارزه با موادمخدر فاتب">پایگاه پنجم پلیس مبارزه با موادمخدر فاتب</option>';
+            name_options_str  += '<option value="پایگاه چهارم پلیس آگاهی">پایگاه چهارم پلیس آگاهی</option>';
+            name_options_str  += '<option value="پایگاه چهارم پلیس مواد مخدر">پایگاه چهارم پلیس مواد مخدر</option>';
+            name_options_str  += '<option value="پایگاه یکم پلیس امنیت">پایگاه یکم پلیس امنیت</option>';
+            name_options_str  += '<option value="پلیس">پلیس</option>';
+            name_options_str  += '<option value="پلیس + ۱۰">پلیس + ۱۰</option>';
+            name_options_str  += '<option value="پلیس +۱٠">پلیس +۱٠</option>';
+            name_options_str  += '<option value="پلیس +۱۰">پلیس +۱۰</option>';
+            name_options_str  += '<option value="پلیس امنیت اخلاقی">پلیس امنیت اخلاقی</option>';
+            name_options_str  += '<option value="پلیس امنیت اقتصادی">پلیس امنیت اقتصادی</option>';
+            name_options_str  += '<option value="پلیس دیپلماتیک هروی">پلیس دیپلماتیک هروی</option>';
+            name_options_str  += '<option value="پلیس راهنمایی منطقه یک">پلیس راهنمایی منطقه یک</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی">پلیس راهنمایی و رانندگی</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی تهران بزرگ منطقه ۶">پلیس راهنمایی و رانندگی تهران بزرگ منطقه ۶</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی منطقه سه">پلیس راهنمایی و رانندگی منطقه سه</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی منطقه شش">پلیس راهنمایی و رانندگی منطقه شش</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی منطقه چهار">پلیس راهنمایی و رانندگی منطقه چهار</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی منطقه ۱۲">پلیس راهنمایی و رانندگی منطقه ۱۲</option>';
+            name_options_str  += '<option value="پلیس راهنمایی و رانندگی منطقه ۱۳">پلیس راهنمایی و رانندگی منطقه ۱۳</option>';
+            name_options_str  += '<option value="پلیس فتا">پلیس فتا</option>';
+            name_options_str  += '<option value="پلیس مبارزه با مواد مخدر فاتب">پلیس مبارزه با مواد مخدر فاتب</option>';
+            name_options_str  += '<option value="پلیس پارک ملت">پلیس پارک ملت</option>';
+            name_options_str  += '<option value="پلیس کوهستان درکه">پلیس کوهستان درکه</option>';
+            name_options_str  += '<option value="پلیس+۱۰">پلیس+۱۰</option>';
+            name_options_str  += '<option value="کانسک پلیس">کانسک پلیس</option>';
+            name_options_str  += '<option value="کانکس کلانتری">کانکس کلانتری</option>';
+            name_options_str  += '<option value="کلانتری">کلانتری</option>';
+            name_options_str  += '<option value="کلانتری دره فرحزاد">کلانتری دره فرحزاد</option>';
+            name_options_str  += '<option value="کلانتری ۱۱۰ شهدا">کلانتری ۱۱۰ شهدا</option>';
+            name_options_str  += '<option value="کلانتری ۱۱۳ بازار">کلانتری ۱۱۳ بازار</option>';
+            name_options_str  += '<option value="کلانتری ۱۱۶ مولوی">کلانتری ۱۱۶ مولوی</option>';
+            name_options_str  += '<option value="کلانتری ۱۲۰ سید خندان">کلانتری ۱۲۰ سید خندان</option>';
+            name_options_str  += '<option value="کلانتری ۱۲۲ دربند">کلانتری ۱۲۲ دربند</option>';
+            name_options_str  += '<option value="کلانتری ۱۳۱ شهرری">کلانتری ۱۳۱ شهرری</option>';
+            name_options_str  += '<option value="کلانتری ۱۳۵ آزادی">کلانتری ۱۳۵ آزادی</option>';
+            name_options_str  += '<option value="کلانتری ۱۳۶ فرجام">کلانتری ۱۳۶ فرجام</option>';
+            name_options_str  += '<option value="کلانتری ۱۳۷ کوی نصر">کلانتری ۱۳۷ کوی نصر</option>';
+            name_options_str  += '<option value="کلانتری ۱۴۴">کلانتری ۱۴۴</option>';
+            name_options_str  += '<option value="کلانتری ۱۴۹ امامزاده حسن">کلانتری ۱۴۹ امامزاده حسن</option>';
+            name_options_str  += '<option value="کلانتری ۱۵۱ یافت آباد">کلانتری ۱۵۱ یافت آباد</option>';
+            name_options_str  += '<option value="کلانتری ۱۵۲ خانی آبادنو">کلانتری ۱۵۲ خانی آبادنو</option>';
+            name_options_str  += '<option value="کلانتری ۱۵۳ شهرک ولیعصر">کلانتری ۱۵۳ شهرک ولیعصر</option>';
+            name_options_str  += '<option value="کلانتری ۱۵۵ نعمت آباد">کلانتری ۱۵۵ نعمت آباد</option>';
+            name_options_str  += '<option value="کلانتری ۱۵۷ مسعودیه">کلانتری ۱۵۷ مسعودیه</option>';
+            name_options_str  += '<option value="کلانتری ۱۶۱ ابوذر">کلانتری ۱۶۱ ابوذر</option>';
+            name_options_str  += '<option value="کلانتری ۱۶۳ ولنجک">کلانتری ۱۶۳ ولنجک</option>';
+            name_options_str  += '<option value="کلانتری ۱۷۹ خلیج فارس">کلانتری ۱۷۹ خلیج فارس</option>';
+            name_options_str  += '<option value="کلانتری ۱۹۰ مجیدیه">کلانتری ۱۹۰ مجیدیه</option>';
+            name_options_str  += '<option value="کلانتری ۲۰۸ پایانه جنوب">کلانتری ۲۰۸ پایانه جنوب</option>';
+            name_options_str  += '<option value="کلینیک ارتودنسی دکتر ساغر هرندی">کلینیک ارتودنسی دکتر ساغر هرندی</option>';
+            name_options_str  += '<option value="کلینیک دندانپزشکی مطهر">کلینیک دندانپزشکی مطهر</option>';
+            name_options_str  += '<option value="کلینیک سمعک حس دوم">کلینیک سمعک حس دوم</option>';
+            name_options_str  += '<option value="کلینیک فیزیوتراپی فردین">کلینیک فیزیوتراپی فردین</option>';
+            name_options_str  += '<option value="کلینیک مغز و اعصاب الیسا">کلینیک مغز و اعصاب الیسا</option>';
+            name_options_str  += '<option value="کیوسک راهنمایی و رانندگی">کیوسک راهنمایی و رانندگی</option>';
+            name_options_str  += '<option value="کیوسک شماره ۲ کلانتری ۴۱ شهرک راه آهن">کیوسک شماره ۲ کلانتری ۴۱ شهرک راه آهن</option>';
+            name_options_str  += '<option value="کیوسک پلیس">کیوسک پلیس</option>';
+            name_options_str  += '<option value="کیوسک پلیس شماره یک افسریه">کیوسک پلیس شماره یک افسریه</option>';
+            name_options_str  += '<option value="کیوسک کلانتری">کیوسک کلانتری</option>';
+            name_options_str  += '<option value="کیوسک کلانتری ۱۳۹ مرزداران">کیوسک کلانتری ۱۳۹ مرزداران</option>';
+            name_options_str  += '<option value="کیوسک کلانتری ۱۴۱">کیوسک کلانتری ۱۴۱</option>';
+            name_options_str  += '<option value="یگان انتظامی مدرس">یگان انتظامی مدرس</option>';
+            sel_name.innerHTML = name_options_str;
+            div_name.appendChild(sel_name);
+            var lab_name = document.createElement('div');
+            lab_name.innerHTML = 'name';
+            lab_name.className = 'filterlabel';
+            div_name.appendChild(lab_name);
+            var reset_name = document.createElement('div');
+            reset_name.innerHTML = 'clear filter';
+            reset_name.className = 'filterlabel';
+            reset_name.onclick = function() {
+                var options = document.getElementById("sel_name").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_name.appendChild(reset_name);
+        </script>
+    </body>
+</html>
